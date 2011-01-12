@@ -2,7 +2,7 @@
  * LoggerMessageCell.h
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
- * 
+ *
  * Copyright (c) 2010-2011 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -26,7 +26,7 @@
  * LIABILITY,  WHETHER  IN CONTRACT,  STRICT  LIABILITY,  OR TORT  (INCLUDING
  * NEGLIGENCE  OR OTHERWISE)  ARISING  IN ANY  WAY  OUT OF  THE  USE OF  THIS
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
- * 
+ *
  */
 #import <Cocoa/Cocoa.h>
 
@@ -36,13 +36,13 @@
 {
 	LoggerMessage *message;
 	LoggerMessage *previousMessage;
-	
+
 	NSDictionary *messageAttributes;
 
 	// unused
 //	CGFloat timestampColumnWidth;
 //	CGFloat threadIDColumnWidth;
-	
+
 	BOOL shouldShowFunctionNames;
     BOOL modifyingThreadColumnWidth;
 }
@@ -57,7 +57,7 @@
 + (NSDictionary *)defaultAttributes;
 + (void)setDefaultAttributes:(NSDictionary *)newAttributes;
 + (CGFloat)heightForCellWithMessage:(LoggerMessage *)aMessage threadColumnWidth:(CGFloat)threadColumWidth maxSize:(NSSize)sz showFunctionNames:(BOOL)showFunctionNames;
-+ (CGFloat)minimumHeightForCell;
++ (CGFloat)minimumHeightForCell:(BOOL)showFunctionNames;
 + (void)loadAdvancedColors;
 
 - (BOOL)isColumnResizingHotPoint:(NSPoint)mouseDownPoint inView:(NSView *)controlView;

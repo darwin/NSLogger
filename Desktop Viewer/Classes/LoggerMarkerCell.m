@@ -47,7 +47,7 @@
 + (CGFloat)heightForCellWithMessage:(LoggerMessage *)aMessage threadColumnWidth:(CGFloat)threadColumWidth maxSize:(NSSize)sz showFunctionNames:(BOOL)showFunctionNames
 {
 	// return cached cell height if possible
-	CGFloat minimumHeight = [self minimumHeightForCell];
+	CGFloat minimumHeight = [self minimumHeightForCell:showFunctionNames];
 	NSSize cellSize = aMessage.cachedCellSize;
 	if (cellSize.width == sz.width)
 		return cellSize.height;
