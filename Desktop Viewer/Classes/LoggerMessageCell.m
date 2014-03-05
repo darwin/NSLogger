@@ -39,8 +39,8 @@
 
 #define INDENTATION_TAB_WIDTH		10.0f			// in pixels
 
-#define TIMESTAMP_COLUMN_WIDTH		85.0f
-#define	THREAD_COLUMN_WIDTH			120.0f
+#define TIMESTAMP_COLUMN_WIDTH		60.0f
+//#define	THREAD_COLUMN_WIDTH			120.0f
 
 static NSMutableDictionary *sDefaultAttributes = nil;
 static NSColor *sDefaultTagAndLevelColor = nil;
@@ -53,7 +53,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 
 @implementation LoggerMessageCell
 
-@synthesize message, previousMessage, messageAttributes, modifyingThreadColumnWidth;
+@synthesize message, previousMessage, messageAttributes/*, modifyingThreadColumnWidth*/;
 @synthesize shouldShowFunctionNames;
 
 // -----------------------------------------------------------------------------
@@ -615,7 +615,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	if (tv.tv_usec == 0)
 		timestampStr = [NSString stringWithFormat:@"%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec];
 	else
-		timestampStr = [NSString stringWithFormat:@"%02d:%02d:%02d.%03d", t->tm_hour, t->tm_min, t->tm_sec, tv.tv_usec / 1000];
+		timestampStr = [NSString stringWithFormat:@"%02d:%02d.%03d", t->tm_min, t->tm_sec, tv.tv_usec / 1000];
 
 	NSString *timeDeltaStr = nil;
 	if (previousMessage != nil)
@@ -651,7 +651,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	CGContextRestoreGState(ctx);
 }
 
-- (void)drawThreadIDAndTagInRect:(NSRect)drawRect highlightedTextColor:(NSColor *)highlightedTextColor
+- (CGFloat)drawThreadIDAndTagInRect:(NSRect)drawRect highlightedTextColor:(NSColor *)highlightedTextColor
 {
 	NSRect r = drawRect;
 
@@ -678,19 +678,19 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	// Draw tag and level, if provided
 	NSString *tag = message.tag;
 	int level = message.level;
+    NSRect tagAndLevelRect = NSZeroRect;
 	if ([tag length] || level)
 	{
-		LoggerWindowController *wc = [[[self controlView] window] windowController];
-		CGFloat threadColumnWidth = ([wc isKindOfClass:[LoggerWindowController class]]) ? wc.threadColumnWidth : DEFAULT_THREAD_COLUMN_WIDTH;
+		CGFloat threadColumnWidth = DEFAULT_THREAD_COLUMN_WIDTH;
 		NSSize tagSize = NSZeroSize;
 		NSSize levelSize = NSZeroSize;
 		NSString *levelString = nil;
-	if (shouldShowFunctionNames) {
-		r.origin.y += NSHeight(r);
-	} else {
-	    r.origin.y += 1;
-	    r.size.height = 16;
-	}
+        if (shouldShowFunctionNames) {
+            r.origin.y += NSHeight(r);
+        } else {
+            r.origin.y += 1;
+            r.size.height = 16;
+        }
 		if ([tag length])
 		{
 			tagSize = [tag boundingRectWithSize:NSMakeSize(threadColumnWidth, NSHeight(drawRect) - NSHeight(r))
@@ -710,7 +710,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 			levelSize.height += 2;
 		}
 		CGFloat h = fmaxf(tagSize.height, levelSize.height);
-		NSRect tagRect = NSMakeRect(NSMinX(r) + 3,
+		NSRect tagRect = NSMakeRect(NSMaxX(r) - 3 - tagSize.width - levelSize.width,
 									NSMinY(r),
 									tagSize.width,
 									h);
@@ -718,7 +718,8 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 									  NSMinY(tagRect),
 									  levelSize.width,
 									  h);
-		NSRect tagAndLevelRect = NSUnionRect(tagRect, levelRect);
+        tagAndLevelRect = NSUnionRect(tagRect, levelRect);
+//        tagAndLevelRect.origin.x = NSMaxX(drawRect) - NSWidth(tagAndLevelRect);
 
 		MakeRoundedPath(ctx, NSRectToCGRect(tagAndLevelRect), 3.0f);
 		CGColorRef fillColor = CreateCGColorFromNSColor([[self class] colorForTag:tag]);
@@ -751,6 +752,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 		}
 	}
 	CGContextRestoreGState(ctx);
+    return NSWidth(tagAndLevelRect);
 }
 
 - (void)drawMessageInRect:(NSRect)r highlightedTextColor:(NSColor *)highlightedTextColor
@@ -1005,10 +1007,10 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH), floorf(NSMaxY(cellFrame)-1));
 
 	// thread/message separator
-    LoggerWindowController *wc = [[[self controlView] window] windowController];
-	CGFloat threadColumnWidth = ([wc isKindOfClass:[LoggerWindowController class]]) ? wc.threadColumnWidth : DEFAULT_THREAD_COLUMN_WIDTH;
-	CGContextMoveToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth), NSMinY(cellFrame));
-	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth), floorf(NSMaxY(cellFrame)-1));
+	CGFloat threadColumnWidth = DEFAULT_THREAD_COLUMN_WIDTH;
+//	CGContextMoveToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth), NSMinY(cellFrame));
+//	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth), floorf(NSMaxY(cellFrame)-1));
+
 	CGContextStrokePath(ctx);
 
 	// restore antialiasing
@@ -1022,16 +1024,16 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	[self drawTimestampAndDeltaInRect:r highlightedTextColor:highlightedTextColor];
 
 	// Draw thread ID and tag
-	r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH,
+	r = NSMakeRect(NSMaxX(cellFrame) - threadColumnWidth,
 				   NSMinY(cellFrame),
 				   threadColumnWidth,
 				   NSHeight(cellFrame));
-	[self drawThreadIDAndTagInRect:r highlightedTextColor:highlightedTextColor];
+	CGFloat tagWidth = [self drawThreadIDAndTagInRect:r highlightedTextColor:highlightedTextColor];
 
 	// Draw message
-	r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth + 3,
+	r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + 3,
 				   NSMinY(cellFrame),
-				   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + threadColumnWidth) - 6,
+				   NSWidth(cellFrame) - TIMESTAMP_COLUMN_WIDTH - 6 - tagWidth,
 				   NSHeight(cellFrame));
 	CGFloat fileLineFunctionHeight = 0;
 	if (shouldShowFunctionNames && ([message.filename length] || [message.functionName length]))
@@ -1045,78 +1047,78 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	// Draw File / Line / Function
 	if (fileLineFunctionHeight)
 	{
-		r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth + 1,
+		r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + 1,
 					   NSMinY(cellFrame),
-					   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + threadColumnWidth),
+					   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH),
 					   fileLineFunctionHeight);
 		[self drawFileLineFunctionInRect:r highlightedTextColor:highlightedTextColor mouseOver:NO];
 	}
 }
 
-- (BOOL)isColumnResizingHotPoint:(NSPoint)mouseDownPoint inView:(NSView *)controlView
-{
-    // BEWARE This works since the cell origin.x is the same as the controlView (the tableview) origin.x. The startPoint is in the control view coordinates, so this is a special case.
-    // converting the startPoint in the cell coordinates is not that easy!
-
-    LoggerWindowController *wc = [[[self controlView] window] windowController];
-	if (![wc isKindOfClass:[LoggerWindowController class]])
-		return NO;		// we may be in the Preferences window fake log message display
-
-    CGFloat threadColumnWidth = wc.threadColumnWidth;
-    if(mouseDownPoint.x >= (0. + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth - 5.) && mouseDownPoint.x <= (0. + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth + 5.))
-        return YES;
-
-    return NO;
-}
-
-- (BOOL)startTrackingAt:(NSPoint)startPoint inView:(NSView *)controlView
-{
-    // BEWARE This works since the cell origin.x is the same as the controlView (the tableview) origin.x. The startPoint is in the control view coordinates, so this is a special case.
-    // converting the startPoint in the cell coordinates is not that easy!
-
-    // if clicking around the thread / message separator, then track
-    if([self isColumnResizingHotPoint:startPoint inView:controlView])
-    {
-        [[NSCursor resizeLeftRightCursor] push];
-        self.modifyingThreadColumnWidth = YES;
-        return YES;
-    }
-
-    return [super startTrackingAt:startPoint inView:controlView];
-}
-
-- (BOOL)continueTracking:(NSPoint)lastPoint at:(NSPoint)currentPoint inView:(NSView *)controlView
-{
-    if(self.modifyingThreadColumnWidth == YES)
-    {
-        LoggerWindowController *wc = [[[self controlView] window] windowController];
-        CGFloat threadColumnWidth = wc.threadColumnWidth;
-
-        CGFloat currentColWidth = threadColumnWidth;
-        CGFloat difference = currentPoint.x - lastPoint.x;
-
-        if(currentColWidth + difference > 20.) // avoids tiny column
-        {
-            wc.threadColumnWidth = currentColWidth + difference;
-            [controlView setNeedsDisplay:YES];
-        }
-
-        return YES;
-    }
-
-    return [super continueTracking:(NSPoint)lastPoint at:(NSPoint)currentPoint inView:(NSView *)controlView];
-}
-
-- (void)stopTracking:(NSPoint)lastPoint at:(NSPoint)stopPoint inView:(NSView *)controlView mouseIsUp:(BOOL)flag
-{
-    if(self.modifyingThreadColumnWidth == YES)
-    {
-        self.modifyingThreadColumnWidth = NO;
-        [[NSCursor resizeLeftRightCursor] pop];
-    }
-
-    [super stopTracking:(NSPoint)lastPoint at:(NSPoint)stopPoint inView:(NSView *)controlView mouseIsUp:(BOOL)flag];
-}
+//- (BOOL)isColumnResizingHotPoint:(NSPoint)mouseDownPoint inView:(NSView *)controlView
+//{
+//    // BEWARE This works since the cell origin.x is the same as the controlView (the tableview) origin.x. The startPoint is in the control view coordinates, so this is a special case.
+//    // converting the startPoint in the cell coordinates is not that easy!
+//
+//    LoggerWindowController *wc = [[[self controlView] window] windowController];
+//	if (![wc isKindOfClass:[LoggerWindowController class]])
+//		return NO;		// we may be in the Preferences window fake log message display
+//
+//    CGFloat threadColumnWidth = wc.threadColumnWidth;
+//    if(mouseDownPoint.x >= (0. + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth - 5.) && mouseDownPoint.x <= (0. + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth + 5.))
+//        return YES;
+//
+//    return NO;
+//}
+//
+//- (BOOL)startTrackingAt:(NSPoint)startPoint inView:(NSView *)controlView
+//{
+//    // BEWARE This works since the cell origin.x is the same as the controlView (the tableview) origin.x. The startPoint is in the control view coordinates, so this is a special case.
+//    // converting the startPoint in the cell coordinates is not that easy!
+//
+//    // if clicking around the thread / message separator, then track
+//    if([self isColumnResizingHotPoint:startPoint inView:controlView])
+//    {
+//        [[NSCursor resizeLeftRightCursor] push];
+//        self.modifyingThreadColumnWidth = YES;
+//        return YES;
+//    }
+//
+//    return [super startTrackingAt:startPoint inView:controlView];
+//}
+//
+//- (BOOL)continueTracking:(NSPoint)lastPoint at:(NSPoint)currentPoint inView:(NSView *)controlView
+//{
+//    if(self.modifyingThreadColumnWidth == YES)
+//    {
+//        LoggerWindowController *wc = [[[self controlView] window] windowController];
+//        CGFloat threadColumnWidth = wc.threadColumnWidth;
+//
+//        CGFloat currentColWidth = threadColumnWidth;
+//        CGFloat difference = currentPoint.x - lastPoint.x;
+//
+//        if(currentColWidth + difference > 20.) // avoids tiny column
+//        {
+//            wc.threadColumnWidth = currentColWidth + difference;
+//            [controlView setNeedsDisplay:YES];
+//        }
+//
+//        return YES;
+//    }
+//
+//    return [super continueTracking:(NSPoint)lastPoint at:(NSPoint)currentPoint inView:(NSView *)controlView];
+//}
+//
+//- (void)stopTracking:(NSPoint)lastPoint at:(NSPoint)stopPoint inView:(NSView *)controlView mouseIsUp:(BOOL)flag
+//{
+//    if(self.modifyingThreadColumnWidth == YES)
+//    {
+//        self.modifyingThreadColumnWidth = NO;
+//        [[NSCursor resizeLeftRightCursor] pop];
+//    }
+//
+//    [super stopTracking:(NSPoint)lastPoint at:(NSPoint)stopPoint inView:(NSView *)controlView mouseIsUp:(BOOL)flag];
+//}
 
 #pragma mark -
 #pragma mark Contextual menu

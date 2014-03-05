@@ -33,13 +33,13 @@
 
 @implementation LoggerTableView
 
-@synthesize timestampColumnWidth, threadIDColumnWidth;
+@synthesize timestampColumnWidth/*, threadIDColumnWidth*/;
 
 - (void) dealloc
 {
 	[tableTrackingArea release];
 	[timestampSeparatorTrackingArea release];
-	[threadSeparatorTrackingArea release];
+//	[threadSeparatorTrackingArea release];
 	[super dealloc];
 }
 
@@ -54,20 +54,20 @@
 #pragma mark -
 #pragma mark Dragging support
 
-- (BOOL)canDragRowsWithIndexes:(NSIndexSet *)rowIndexes atPoint:(NSPoint)mouseDownPoint
-{
-	// Don't understand why I have to override this method, but it's the only
-	// way I could get dragging from table to work. Tried various additional
-	// things with no luck...
-    
-    if([self columnAtPoint:mouseDownPoint] > -1 && [self rowAtPoint:mouseDownPoint] > -1)
-    {
-        NSCell *clickedCell = [self preparedCellAtColumn:[self columnAtPoint:mouseDownPoint] row:[self rowAtPoint:mouseDownPoint]];
-        if([clickedCell respondsToSelector:@selector(isColumnResizingHotPoint:inView:)]) // LoggerMessageCell 
-            return ( ! [(LoggerMessageCell*)clickedCell isColumnResizingHotPoint:mouseDownPoint inView:self] );
-    }
-    
-	return YES;
-}
+//- (BOOL)canDragRowsWithIndexes:(NSIndexSet *)rowIndexes atPoint:(NSPoint)mouseDownPoint
+//{
+//	// Don't understand why I have to override this method, but it's the only
+//	// way I could get dragging from table to work. Tried various additional
+//	// things with no luck...
+//    
+//    if([self columnAtPoint:mouseDownPoint] > -1 && [self rowAtPoint:mouseDownPoint] > -1)
+//    {
+//        NSCell *clickedCell = [self preparedCellAtColumn:[self columnAtPoint:mouseDownPoint] row:[self rowAtPoint:mouseDownPoint]];
+//        if([clickedCell respondsToSelector:@selector(isColumnResizingHotPoint:inView:)]) // LoggerMessageCell 
+//            return ( ! [(LoggerMessageCell*)clickedCell isColumnResizingHotPoint:mouseDownPoint inView:self] );
+//    }
+//    
+//	return YES;
+//}
 
 @end

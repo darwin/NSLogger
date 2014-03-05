@@ -44,23 +44,23 @@
 //	CGFloat threadIDColumnWidth;
 
 	BOOL shouldShowFunctionNames;
-    BOOL modifyingThreadColumnWidth;
+//    BOOL modifyingThreadColumnWidth;
 }
 
 @property (nonatomic, retain) LoggerMessage *message;
 @property (nonatomic, retain) LoggerMessage *previousMessage;
 @property (nonatomic, retain) NSDictionary *messageAttributes;
 @property (nonatomic, assign) BOOL shouldShowFunctionNames;
-@property (nonatomic, assign) BOOL modifyingThreadColumnWidth;
+//@property (nonatomic, assign) BOOL modifyingThreadColumnWidth;
 
 + (NSDictionary *)defaultAttributesDictionary;
 + (NSDictionary *)defaultAttributes;
 + (void)setDefaultAttributes:(NSDictionary *)newAttributes;
 + (CGFloat)heightForCellWithMessage:(LoggerMessage *)aMessage threadColumnWidth:(CGFloat)threadColumWidth maxSize:(NSSize)sz showFunctionNames:(BOOL)showFunctionNames;
 + (CGFloat)minimumHeightForCell:(BOOL)showFunctionNames;
-+ (void)loadAdvancedColors;
+//+ (void)loadAdvancedColors;
 
-- (BOOL)isColumnResizingHotPoint:(NSPoint)mouseDownPoint inView:(NSView *)controlView;
+//- (BOOL)isColumnResizingHotPoint:(NSPoint)mouseDownPoint inView:(NSView *)controlView;
 
 @end
 

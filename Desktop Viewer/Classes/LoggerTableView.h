@@ -33,13 +33,13 @@
 {
 	NSTrackingArea *tableTrackingArea;
 	NSTrackingArea *timestampSeparatorTrackingArea;
-	NSTrackingArea *threadSeparatorTrackingArea;
+//	NSTrackingArea *threadSeparatorTrackingArea;
 
 	CGFloat timestampColumnWidth;
-	CGFloat threadIDColumnWidth;
+//	CGFloat threadIDColumnWidth;
 }
 
 @property (nonatomic, assign) CGFloat timestampColumnWidth;
-@property (nonatomic, assign) CGFloat threadIDColumnWidth;
+//@property (nonatomic, assign) CGFloat threadIDColumnWidth;
 
 @end

@@ -34,18 +34,18 @@
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
-	// hack: to detect the end of a split view drag, post a message that will be sent
-	// only when the runloop returns to the default run loop mode. At this point, we will
-	// send a notification that will force a logTable re-tile if needed
-	// (explanation: during a split view divided drag, the runloop is being set in a
-	// special mode and will exit this mode only when dragging ends -- since we don't
-	// get any notification that a divider drag ended, I had to find another way to
-	// detect the end of a divider drag).
-	[self performSelector:@selector(sendTableRetileNotification)
-			   withObject:nil
-			   afterDelay:0
-				  inModes:[NSArray arrayWithObject:NSDefaultRunLoopMode]];
-	[super mouseDown:theEvent];
+//	// hack: to detect the end of a split view drag, post a message that will be sent
+//	// only when the runloop returns to the default run loop mode. At this point, we will
+//	// send a notification that will force a logTable re-tile if needed
+//	// (explanation: during a split view divided drag, the runloop is being set in a
+//	// special mode and will exit this mode only when dragging ends -- since we don't
+//	// get any notification that a divider drag ended, I had to find another way to
+//	// detect the end of a divider drag).
+//	[self performSelector:@selector(sendTableRetileNotification)
+//			   withObject:nil
+//			   afterDelay:0
+//				  inModes:[NSArray arrayWithObject:NSDefaultRunLoopMode]];
+//	[super mouseDown:theEvent];
 }
 
 - (void)sendTableRetileNotification
