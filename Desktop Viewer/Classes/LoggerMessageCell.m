@@ -411,23 +411,24 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 {
 	if (sMinimumHeightForCell == 0)
 	{
-		NSRect r1 = [@"10:10:10.256" boundingRectWithSize:NSMakeSize(1024, 1024)
-												  options:NSStringDrawingUsesLineFragmentOrigin
-											   attributes:[[self defaultAttributes] objectForKey:@"timestamp"]];
-		NSRect r2 = [@"+999ms" boundingRectWithSize:NSMakeSize(1024, 1024)
-											options:NSStringDrawingUsesLineFragmentOrigin
-										 attributes:[[self defaultAttributes] objectForKey:@"timedelta"]];
-		NSRect r3 = [@"Main Thread" boundingRectWithSize:NSMakeSize(1024, 1024)
-												 options:NSStringDrawingUsesLineFragmentOrigin
-											  attributes:[[self defaultAttributes] objectForKey:@"threadID"]];
-		NSRect r4 = [@"qWTy" boundingRectWithSize:NSMakeSize(1024, 1024)
-										  options:NSStringDrawingUsesLineFragmentOrigin
-									   attributes:[[self defaultAttributes] objectForKey:@"tag"]];
-       if (!showFunctionNames) {
-	   r2.size.height = 0;
-	   r3.size.height = 0;
-       }
-		sMinimumHeightForCell = fmaxf(NSHeight(r1) + NSHeight(r2), NSHeight(r3) + NSHeight(r4)) + 4;
+//		NSRect r1 = [@"10:10:10.256" boundingRectWithSize:NSMakeSize(1024, 1024)
+//												  options:NSStringDrawingUsesLineFragmentOrigin
+//											   attributes:[[self defaultAttributes] objectForKey:@"timestamp"]];
+//		NSRect r2 = [@"+999ms" boundingRectWithSize:NSMakeSize(1024, 1024)
+//											options:NSStringDrawingUsesLineFragmentOrigin
+//										 attributes:[[self defaultAttributes] objectForKey:@"timedelta"]];
+//		NSRect r3 = [@"Main Thread" boundingRectWithSize:NSMakeSize(1024, 1024)
+//												 options:NSStringDrawingUsesLineFragmentOrigin
+//											  attributes:[[self defaultAttributes] objectForKey:@"threadID"]];
+//		NSRect r4 = [@"qWTy" boundingRectWithSize:NSMakeSize(1024, 1024)
+//										  options:NSStringDrawingUsesLineFragmentOrigin
+//									   attributes:[[self defaultAttributes] objectForKey:@"tag"]];
+//        if (!showFunctionNames) {
+//           r2.size.height = 0;
+//           r3.size.height = 0;
+//        }
+//        sMinimumHeightForCell = fmaxf(NSHeight(r1) + NSHeight(r2), NSHeight(r3) + NSHeight(r4)) + 4;
+        sMinimumHeightForCell = 4;
 	}
 	return sMinimumHeightForCell;
 }
@@ -447,7 +448,6 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 + (CGFloat)heightForCellWithMessage:(LoggerMessage *)aMessage threadColumnWidth:(CGFloat)threadColumWidth maxSize:(NSSize)sz showFunctionNames:(BOOL)showFunctionNames
 {
 	// return cached cell height if possible
-	CGFloat minimumHeight = [self minimumHeightForCell:showFunctionNames];
 	NSSize cellSize = aMessage.cachedCellSize;
 	if (cellSize.width == sz.width)
 		return cellSize.height;
@@ -455,6 +455,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	cellSize.width = sz.width;
 
 	// new width is larger, but cell already at minimum height, don't recompute
+	CGFloat minimumHeight = [self minimumHeightForCell:showFunctionNames];
 	if (cellSize.width > 0 && cellSize.width < sz.width && cellSize.height == minimumHeight)
 		return minimumHeight;
 
@@ -465,14 +466,18 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	{
 		case kMessageString: {
 			// restrict message length for very long contents
-			NSString *s = aMessage.message;
-			if ([s length] > 2048)
-				s = [s substringToIndex:2048];
+            NSMutableAttributedString* s = [aMessage cachedAttributedMessage];
+//			NSString *s = aMessage.message;
+//			if ([s length] > 2048)
+//				s = [s substringToIndex:2048];
 
+//			NSRect lr = [s boundingRectWithSize:sz
+//										options:(NSStringDrawingOneShot | NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
+//									 attributes:[[self defaultAttributes] objectForKey:@"text"]];
 			NSRect lr = [s boundingRectWithSize:sz
-										options:(NSStringDrawingOneShot | NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
-									 attributes:[[self defaultAttributes] objectForKey:@"text"]];
-			sz.height = fminf(NSHeight(lr), sz.height);
+										options:(NSStringDrawingOneShot | NSStringDrawingUsesLineFragmentOrigin)
+									 ];
+			sz.height = fminf(NSHeight(lr), sz.height)+2;
 			break;
 		}
 
@@ -758,86 +763,94 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 
 	if (message.contentsType == kMessageString)
 	{
-		attrs = [self messageTextAttributes];
+		//attrs = [self messageTextAttributes];
 		// in case the message text is empty, use the function name as message text
 		// this is typically used to record a waypoint in the code flow
-		NSString *s = message.message;
-		if (![s length] && message.functionName)
-			s = message.functionName;
+//		NSString *s = message.message;
+//		if (![s length] && message.functionName)
+//			s = message.functionName;
+        
+        NSAttributedString* s = [message cachedAttributedMessage];
 
 		// very long messages can't be displayed entirely. No need to compute their full size,
 		// it slows down the UI to no avail. Just cut the string to a reasonable size, and take
 		// the calculations from here.
-		BOOL truncated = NO;
-		if ([s length] > 2048)
-		{
-			truncated = YES;
-			s = [s substringToIndex:2048];
-		}
+//		BOOL truncated = NO;
+//		if ([s length] > 2048)
+//		{
+//			truncated = YES;
+//			s = [s substringToIndex:2048];
+//		}
 
-		if (highlightedTextColor != nil)
-		{
-			attrs = [[attrs mutableCopy] autorelease];
-			[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
-		} else {
-            NSColor *color = [[self class] colorForMessage:self.message];
-            if (color) {
-                attrs = [[attrs mutableCopy] autorelease];
-                [attrs setObject:color forKey:NSForegroundColorAttributeName];
-                if (color.isBold) {
-                    NSFont *font = [attrs objectForKey:NSFontAttributeName];
-                    font = [[NSFontManager sharedFontManager] convertFont:font toHaveTrait:NSFontBoldTrait];
-                    [attrs setObject:font forKey:NSFontAttributeName];
-                }
-            }
-        }
+//		if (highlightedTextColor != nil)
+//		{
+//			attrs = [[attrs mutableCopy] autorelease];
+//			[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
+//		} else {
+//            NSColor *color = [[self class] colorForMessage:self.message];
+//            if (color) {
+//                attrs = [[attrs mutableCopy] autorelease];
+//                [attrs setObject:color forKey:NSForegroundColorAttributeName];
+//                if (color.isBold) {
+//                    NSFont *font = [attrs objectForKey:NSFontAttributeName];
+//                    font = [[NSFontManager sharedFontManager] convertFont:font toHaveTrait:NSFontBoldTrait];
+//                    [attrs setObject:font forKey:NSFontAttributeName];
+//                }
+//            }
+//        }
 
 		// compute display string size, limit to cell height
-		NSRect lr = [s boundingRectWithSize:r.size
-									options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
-								 attributes:attrs];
-		if (NSHeight(lr) > NSHeight(r))
-			truncated = YES;
-		else
-		{
-			r.origin.y += floorf((NSHeight(r) - NSHeight(lr)) / 2.0f);
-			r.size.height = NSHeight(lr);
-		}
+//		NSRect lr = [s boundingRectWithSize:r.size
+//									options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
+//];
+//        
+//        r.origin.y += floorf((NSHeight(r) - NSHeight(lr)) / 2.0f);
+//        r.size.height = NSHeight(lr);
+        
+//		if (NSHeight(lr) > NSHeight(r))
+//			truncated = YES;
+//		else
+//		{
+//			r.origin.y += floorf((NSHeight(r) - NSHeight(lr)) / 2.0f);
+//			r.size.height = NSHeight(lr);
+//		}
 
-		CGFloat hintHeight = 0;
-		NSString *hint = nil;
-		NSMutableDictionary *hintAttrs = nil;
-		if (truncated)
-		{
-			// display a hint instructing user to double-click message in order
-			// to see all contents
-			hintAttrs = [[attrs mutableCopy] autorelease];
-			[hintAttrs setObject:[NSNumber numberWithFloat:0.20f] forKey:NSObliquenessAttributeName];
-			if (highlightedTextColor == nil)
-				[hintAttrs setObject:[NSColor darkGrayColor] forKey:NSForegroundColorAttributeName];
-            NSMutableParagraphStyle *style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-            [style setAlignment:NSRightTextAlignment];
-            [hintAttrs setObject:style forKey:NSParagraphStyleAttributeName];
-			hint = NSLocalizedString(@"See all...", @"");
-			hintHeight = [hint boundingRectWithSize:r.size
-											options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
-										 attributes:hintAttrs].size.height;
-		}
+//		CGFloat hintHeight = 0;
+//		NSString *hint = nil;
+//		NSMutableDictionary *hintAttrs = nil;
+//		if (truncated)
+//		{
+//			// display a hint instructing user to double-click message in order
+//			// to see all contents
+//			hintAttrs = [[attrs mutableCopy] autorelease];
+//			[hintAttrs setObject:[NSNumber numberWithFloat:0.20f] forKey:NSObliquenessAttributeName];
+//			if (highlightedTextColor == nil)
+//				[hintAttrs setObject:[NSColor darkGrayColor] forKey:NSForegroundColorAttributeName];
+//            NSMutableParagraphStyle *style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+//            [style setAlignment:NSRightTextAlignment];
+//            [hintAttrs setObject:style forKey:NSParagraphStyleAttributeName];
+//			hint = NSLocalizedString(@"See all...", @"");
+//			hintHeight = [hint boundingRectWithSize:r.size
+//											options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
+//										 attributes:hintAttrs].size.height;
+//		}
 
-		r.size.height -= hintHeight;
-		[s drawWithRect:r
-				options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading | NSStringDrawingTruncatesLastVisibleLine)
-			 attributes:attrs];
+//		r.size.height -= hintHeight;
+        
+        [s drawWithRect:r options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)];
+//		[s drawWithRect:r
+//				options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading | NSStringDrawingTruncatesLastVisibleLine)
+//			 attributes:attrs];
 
 		// Draw hint "Double click to see all text..." if needed
-		if (hint != nil)
-		{
-			r.origin.y += NSHeight(r);
-			r.size.height = hintHeight;
-			[hint drawWithRect:r
-					   options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
-					attributes:hintAttrs];
-		}
+//		if (hint != nil)
+//		{
+//			r.origin.y += NSHeight(r);
+//			r.size.height = hintHeight;
+//			[hint drawWithRect:r
+//					   options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
+//					attributes:hintAttrs];
+//		}
 	}
 	else if (message.contentsType == kMessageData)
 	{

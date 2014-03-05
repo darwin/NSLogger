@@ -57,6 +57,8 @@
 	// unsaved cached data
 	NSSize imageSize;
 	NSSize cachedCellSize;		// we use this to cache the cell's height when recomputing if the width didn't change
+    
+    NSMutableAttributedString* attributedMessage; // cached message
 }
 
 @property (nonatomic, assign) short contentsType;
@@ -79,6 +81,8 @@
 
 - (void)setFilename:(NSString *)aFilename connection:(LoggerConnection *)aConnection;
 - (void)setFunctionName:(NSString *)aFunctionName connection:(LoggerConnection *)aConnection;
+
+- (NSMutableAttributedString *)cachedAttributedMessage;
 
 @end
 

@@ -49,6 +49,7 @@ static NSMutableArray *sTags = nil;
 	{
 		filename = @"";
 		functionName = @"";
+        attributedMessage = nil;
 	}
 	return self;
 }
@@ -60,6 +61,7 @@ static NSMutableArray *sTags = nil;
 	[message release];
 	[image release];
 	[threadID release];
+    [attributedMessage release];
 	[super dealloc];
 }
 
@@ -312,6 +314,28 @@ static NSMutableArray *sTags = nil;
 	td->tv_sec = (__darwin_time_t)t;
 	td->tv_usec = (__darwin_suseconds_t)((t - (double)td->tv_sec) * 1000000.0);
 }
+
+- (NSMutableAttributedString *)cachedAttributedMessage {
+    if (attributedMessage) {
+        return attributedMessage;
+    }
+    id m2 = [@"<html><body><style>html { font-family: Menlo; font-size:6pt; margin:0; padding:0; } body { margin:0; padding:0; white-space:pre; }</style>"
+             stringByAppendingString:[message stringByAppendingString:@""]];
+
+    NSDictionary *options = @{
+        NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType,
+        NSTextEncodingNameDocumentOption: @"UTF-8"
+    };
+    
+    NSData* data = [m2 dataUsingEncoding:NSUTF8StringEncoding];
+    attributedMessage = [[NSMutableAttributedString alloc] initWithData:data
+                                                                options:options
+                                                     documentAttributes:nil
+                                                                  error:nil];
+
+    return attributedMessage;
+}
+
 
 #ifdef DEBUG
 -(NSString *)description
