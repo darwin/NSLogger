@@ -459,7 +459,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	if (cellSize.width > 0 && cellSize.width < sz.width && cellSize.height == minimumHeight)
 		return minimumHeight;
 
-	sz.width -= TIMESTAMP_COLUMN_WIDTH + threadColumWidth + 8;
+	sz.width -= TIMESTAMP_COLUMN_WIDTH + 8;
 	sz.height -= 4;
 
 	switch (aMessage.contentsType)
@@ -477,7 +477,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 			NSRect lr = [s boundingRectWithSize:sz
 										options:(NSStringDrawingOneShot | NSStringDrawingUsesLineFragmentOrigin)
 									 ];
-			sz.height = fminf(NSHeight(lr), sz.height)+2;
+			sz.height = fminf(NSHeight(lr), sz.height);
 			break;
 		}
 

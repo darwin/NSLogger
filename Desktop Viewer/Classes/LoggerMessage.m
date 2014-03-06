@@ -319,15 +319,25 @@ static NSMutableArray *sTags = nil;
     if (attributedMessage) {
         return attributedMessage;
     }
-    id m2 = [@"<html><body><style>html { font-family: Menlo; font-size:6pt; margin:0; padding:0; } body { margin:0; padding:0; white-space:pre; }</style>"
-             stringByAppendingString:[message stringByAppendingString:@""]];
+    // TODO: make this configurable via a config file
+    NSString* prologue = @"<html><body><style>html { font-family: Menlo; font-size:6pt; margin:0; padding:0; } body { margin:0; padding:0; white-space:pre; }</style>";
+    
+    NSString* m = message;
+    
+    // valid HTML markup is surronded with [<span>]some text[</span>]
+    m = [m stringByReplacingOccurrencesOfString:@"<" withString:@"&lt;"];
+    m = [m stringByReplacingOccurrencesOfString:@"[&lt;" withString:@"<"];
+    m = [m stringByReplacingOccurrencesOfString:@">" withString:@"&gt;"];
+    m = [m stringByReplacingOccurrencesOfString:@"&gt;]" withString:@">"];
+    
+    NSString* html = [prologue stringByAppendingString:m];
 
     NSDictionary *options = @{
         NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType,
         NSTextEncodingNameDocumentOption: @"UTF-8"
     };
     
-    NSData* data = [m2 dataUsingEncoding:NSUTF8StringEncoding];
+    NSData* data = [html dataUsingEncoding:NSUTF8StringEncoding];
     attributedMessage = [[NSMutableAttributedString alloc] initWithData:data
                                                                 options:options
                                                      documentAttributes:nil
