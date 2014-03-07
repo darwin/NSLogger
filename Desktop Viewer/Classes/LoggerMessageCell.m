@@ -39,7 +39,7 @@
 
 #define INDENTATION_TAB_WIDTH		10.0f			// in pixels
 
-#define TIMESTAMP_COLUMN_WIDTH		60.0f
+#define TIMESTAMP_COLUMN_WIDTH		45.0f
 //#define	THREAD_COLUMN_WIDTH			120.0f
 
 static NSMutableDictionary *sDefaultAttributes = nil;
