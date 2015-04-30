@@ -1,7 +1,7 @@
 /*
- * Author: Landon Fuller <landonf@plausiblelabs.com>
+ * Author: Andreas Linde <mail@andreaslinde.de>
  *
- * Copyright (c) 2008-2009 Plausible Labs Cooperative, Inc.
+ * Copyright (c) 2012-2014 HockeyApp, Bit Stadium GmbH.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -28,26 +28,30 @@
 
 #import <Foundation/Foundation.h>
 
-@interface PLCrashReportApplicationInfo : NSObject {
-@private
-    /** Application identifier */
-    NSString *_applicationIdentifier;
-    
-    /** Application version */
-    NSString *_applicationVersion;
-}
-
-- (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier 
-                  applicationVersion: (NSString *) applicationVersion;
 
 /**
- * The application identifier. This is usually the application's CFBundleIdentifier value.
+ *  This class provides properties that can be attached to a crash report via a custom alert view flow
  */
-@property(nonatomic, readonly) NSString *applicationIdentifier;
+@interface BITCrashMetaData : NSObject
 
 /**
- * The application version. This is usually the application's CFBundleVersion value.
+ *  User provided description that should be attached to the crash report as plain text
  */
-@property(nonatomic, readonly) NSString *applicationVersion;
+@property (nonatomic, copy) NSString *userDescription;
+
+/**
+ *  User name that should be attached to the crash report
+ */
+@property (nonatomic, copy) NSString *userName;
+
+/**
+ *  User email that should be attached to the crash report
+ */
+@property (nonatomic, copy) NSString *userEmail;
+
+/**
+ *  User ID that should be attached to the crash report
+ */
+@property (nonatomic, copy) NSString *userID;
 
 @end

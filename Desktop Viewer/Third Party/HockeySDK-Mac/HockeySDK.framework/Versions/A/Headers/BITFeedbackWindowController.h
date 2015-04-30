@@ -1,7 +1,7 @@
 /*
- * Author: Landon Fuller <landonf@plausiblelabs.com>
+ * Author: Andreas Linde <mail@andreaslinde.de>
  *
- * Copyright (c) 2008-2009 Plausible Labs Cooperative, Inc.
+ * Copyright (c) 2013-2014 HockeyApp, Bit Stadium GmbH.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -26,28 +26,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import <Foundation/Foundation.h>
+#import <Cocoa/Cocoa.h>
 
-@interface PLCrashReportApplicationInfo : NSObject {
-@private
-    /** Application identifier */
-    NSString *_applicationIdentifier;
-    
-    /** Application version */
-    NSString *_applicationVersion;
-}
+@class BITFeedbackManager;
 
-- (id) initWithApplicationIdentifier: (NSString *) applicationIdentifier 
-                  applicationVersion: (NSString *) applicationVersion;
+@interface BITFeedbackWindowController : NSWindowController
 
-/**
- * The application identifier. This is usually the application's CFBundleIdentifier value.
- */
-@property(nonatomic, readonly) NSString *applicationIdentifier;
-
-/**
- * The application version. This is usually the application's CFBundleVersion value.
- */
-@property(nonatomic, readonly) NSString *applicationVersion;
+- (id)initWithManager:(BITFeedbackManager *)feedbackManager;
 
 @end
